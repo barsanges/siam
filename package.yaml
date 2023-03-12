@@ -1,0 +1,18 @@
+name:                siam
+version:             0.1.0
+author:              barsanges
+maintainer:          https://github.com/barsanges
+copyright:           2023 barsanges
+
+extra-source-files:
+- README.md
+
+synopsis:            An implementation of the board game "Siam"
+description:         Please see the README
+
+dependencies:
+- base
+- containers
+
+library:
+  source-dirs: src
