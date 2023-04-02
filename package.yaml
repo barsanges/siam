@@ -16,9 +16,6 @@ dependencies:
 - containers
 - vty
 
-library:
-  source-dirs: src
-
 executables:
   siam:
     source-dirs:     src
