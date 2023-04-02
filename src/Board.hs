@@ -11,6 +11,7 @@ module Board
   , Pawn(..)
   , Idx
   , Board
+  , initialBoard
   ) where
 
 import qualified Data.IntMap as IM
@@ -36,8 +37,18 @@ data Idx = Idx Int
   deriving (Eq, Show)
 
 -- | Le plateau de jeu.
-data Board = Board { content_ :: IM.IntMap (Maybe Pawn)
+data Board = Board { content_ :: IM.IntMap Pawn
                    , elephantsOut_ :: Int
                    , rhinosOut_ :: Int
                    }
   deriving Show
+
+-- | Le plateau de jeu en début de partie.
+initialBoard :: Board
+initialBoard = Board { content_ = IM.fromList [ (11, Rock)
+                                              , (12, Rock)
+                                              , (13, Rock)
+                                              ]
+                     , elephantsOut_ = 5
+                     , rhinosOut_ = 5
+                     }
