@@ -10,8 +10,10 @@ module Board
   , Orientation(..)
   , Pawn(..)
   , Idx
+  , idxes
   , Board
   , initialBoard
+  , lookupCell
   ) where
 
 import qualified Data.IntMap as IM
@@ -36,6 +38,13 @@ data Pawn = Animal Faction Orientation
 data Idx = Idx Int
   deriving (Eq, Show)
 
+-- | Ensemble des indices des cases : chaque liste correspond à un
+-- rang, de gauche à droite et de haut en bas.
+idxes :: [[Idx]]
+idxes = [ [ Idx (i + 5 * j) | i <- [0..4] ]
+        | j <- [0..4]
+        ]
+
 -- | Le plateau de jeu.
 data Board = Board { content_ :: IM.IntMap Pawn
                    , elephantsOut_ :: Int
@@ -52,3 +61,8 @@ initialBoard = Board { content_ = IM.fromList [ (11, Rock)
                      , elephantsOut_ = 5
                      , rhinosOut_ = 5
                      }
+
+
+-- | Renvoie le contenu d'une cellule.
+lookupCell :: Idx -> Board -> Maybe Pawn
+lookupCell (Idx idx) b = IM.lookup idx (content_ b)
