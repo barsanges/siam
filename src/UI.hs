@@ -42,13 +42,23 @@ drawBoard b = borderWithLabel (str "Plateau")
          ]
   where
     drawCell :: Maybe Pawn -> Widget Name
-    drawCell mp = border (str marker) -- FIXME : il manque l'orientation
+    drawCell mp = border (vBox [str top, str middle, str bottom])
       where
-        marker = case mp of
+        dir = case mp of
+          Nothing -> Nothing
+          Just (Animal _ x) -> Just x
+          Just _ -> Nothing
+        c = case mp of
           Nothing -> " "
           Just Rock -> "■"
           Just (Animal Rhino _) -> "R"
           Just (Animal Elephant _) -> "E"
+        (top, middle, bottom) = case dir of
+          Nothing ->    ("       ", "   " ++ c ++ "   ", "       ")
+          Just North -> ("   ·   ", "   " ++ c ++ "   ", "       ")
+          Just West ->  ("       ", "  ·" ++ c ++ "   ", "       ")
+          Just South -> ("       ", "   " ++ c ++ "   ", "   ·   ")
+          Just East ->  ("       ", "   " ++ c ++ "·  ", "       ")
 
 -- | Fait évoluer l'interface en fonction d'un événement.
 handleEvent :: BrickEvent Name e -> EventM Name Game ()
