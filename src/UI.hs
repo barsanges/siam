@@ -119,7 +119,7 @@ help = borderWithLabel (str "Commandes")
   <+> padRight Max (vBox [ strWrap " "
                          , strWrap "Les commandes doivent être renseignées via l'invite de commande débutant par '>'."
                          , strWrap " "
-                         , strWrap "Un mouvement se déclare avec la syntaxe 'x y o', où x est la case de départ, y est la case d'arrivée, et o l'orientation finale (N/W/S/E)."
+                         , strWrap "Un coup se déclare avec la syntaxe 'x y o', où x est la case de départ, y la case d'arrivée, et o l'orientation finale (N/W/S/E)."
                          , strWrap " "
                          , strWrap "Exemples :"
                          , strWrap "  a1 a2 W   La pièce en a1 se déplace en a2 et termine orientée vers l'ouest."
