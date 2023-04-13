@@ -13,6 +13,7 @@ module Board
   , idxes
   , Board
   , initialBoard
+  , numberOut
   , lookupCell
   ) where
 
@@ -62,6 +63,10 @@ initialBoard = Board { content_ = IM.fromList [ (11, Rock)
                      , rhinosOut_ = 5
                      }
 
+-- | Renvoie le nombre d'éléphants ou de rhinocéros en dehors du plateau.
+numberOut :: Board -> Faction -> Int
+numberOut b Elephant = elephantsOut_ b
+numberOut b Rhino = rhinosOut_ b
 
 -- | Renvoie le contenu d'une cellule.
 lookupCell :: Idx -> Board -> Maybe Pawn
