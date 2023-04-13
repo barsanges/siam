@@ -76,20 +76,22 @@ drawBoard b = borderWithLabel (str "Plateau")
 -- en cours.
 drawDescrOngoing :: Board -> Faction -> Widget Name
 drawDescrOngoing b f = borderWithLabel (str "Etat de la partie")
-  $ vBox [ str " "
-         , elephantsStatus
-         , rhinosStatus
-         , str " "
-         , elephantsOut
-         , rhinosOut
-         , str " "
-         ]
+  $ str " "
+  <+> vBox [ str " "
+           , elephantsStatus
+           , rhinosStatus
+           , str " "
+           , elephantsOut
+           , rhinosOut
+           , str " "
+           ]
+  <+> str " "
   where
     (elephantsStatus, rhinosStatus) = case f of
-      Elephant -> (str " Les éléphants jouent", str " Les rhinocéros attendent")
-      Rhino -> (str " Les éléphants attendent", str " Les rhinocéros jouent ")
-    elephantsOut = str (" Eléphants en attente : " ++ (show $ numberOut b Elephant) ++ " ")
-    rhinosOut = str (" Rhinocéros en attente : " ++ (show $ numberOut b Rhino) ++ " ")
+      Elephant -> (str "Les éléphants jouent", str "Les rhinocéros attendent")
+      Rhino -> (str "Les éléphants attendent", str "Les rhinocéros jouent ")
+    elephantsOut = str ("Eléphants en attente : " ++ (show $ numberOut b Elephant))
+    rhinosOut = str ("Rhinocéros en attente : " ++ (show $ numberOut b Rhino))
 
 -- | Affiche une brève description de l'état de la partie lorsque celle-ci est
 -- terminée.
