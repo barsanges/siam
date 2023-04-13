@@ -89,8 +89,8 @@ drawDescrOngoing b f = borderWithLabel (str "Etat de la partie")
   <+> str " "
   where
     (elephantsStatus, rhinosStatus) = case f of
-      Elephant -> (str "Les éléphants jouent", str "Les rhinocéros attendent")
-      Rhino -> (str "Les éléphants attendent", str "Les rhinocéros jouent ")
+      Elephant -> (str "Les éléphants jouent.", str "Les rhinocéros attendent.")
+      Rhino -> (str "Les éléphants attendent.", str "Les rhinocéros jouent.")
     elephantsOut = str ("Eléphants en attente : " ++ (show $ numberOut b Elephant))
     rhinosOut = str ("Rhinocéros en attente : " ++ (show $ numberOut b Rhino))
 
