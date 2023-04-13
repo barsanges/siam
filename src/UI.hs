@@ -30,8 +30,8 @@ app = App { appDraw = drawUI
 
 -- | Affiche l'interface.
 drawUI :: Game -> [Widget Name]
-drawUI (Ongoing _ b) = [drawBoard b]
-drawUI (Ended _ b) = [drawBoard b]
+drawUI (Ongoing f b) = [drawBoard b <+> drawDescrOngoing b f]
+drawUI (Ended f b) = [drawBoard b <+> drawDescrEnded f]
 
 -- | Affiche le plateau.
 drawBoard :: Board -> Widget Name
@@ -69,6 +69,34 @@ drawBoard b = borderWithLabel (str "Plateau")
           Just West ->  ("       ", "  ·" ++ c ++ "   ", "       ")
           Just South -> ("       ", "   " ++ c ++ "   ", "   ·   ")
           Just East ->  ("       ", "   " ++ c ++ "·  ", "       ")
+
+-- | Affiche une brève description de l'état de la partie lorsque celle-ci est
+-- en cours.
+drawDescrOngoing :: Board -> Faction -> Widget Name
+drawDescrOngoing b f = borderWithLabel (str "Etat de la partie")
+  $ vBox [ str " "
+         , elephantsStatus
+         , rhinosStatus
+         , str " "
+         , elephantsOut
+         , rhinosOut
+         , str " "
+         ]
+  where
+    (elephantsStatus, rhinosStatus) = case f of
+      Elephant -> (str " Les éléphants jouent", str " Les rhinocéros attendent")
+      Rhino -> (str " Les éléphants attendent", str " Les rhinocéros jouent ")
+    elephantsOut = str (" Eléphants en attente : " ++ (show $ numberOut b Elephant) ++ " ")
+    rhinosOut = str (" Rhinocéros en attente : " ++ (show $ numberOut b Rhino) ++ " ")
+
+-- | Affiche une brève description de l'état de la partie lorsque celle-ci est
+-- terminée.
+drawDescrEnded :: Faction -> Widget Name
+drawDescrEnded f = borderWithLabel (str "Etat de la partie") (descr f)
+  where
+    descr :: Faction -> Widget Name
+    descr Elephant = vBox [str "Les éléphants ont gagné", str ""]
+    descr Rhino = vBox [str "Les rhinocéros ont gagné", str ""]
 
 -- | Fait évoluer l'interface en fonction d'un événement.
 handleEvent :: BrickEvent Name e -> EventM Name Game ()
