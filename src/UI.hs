@@ -38,6 +38,8 @@ drawBoard :: Board -> Widget Name
 drawBoard b = borderWithLabel (str "Plateau")
   $ (hLimit 51 $ hCenter $ str "Nord")
   <=> str "       a        b        c        d        e      "
+  -- FIXME : se doter d'une fonction pour calculer la taille des éléments,
+  -- plutôt que de renseigner des chiffres en dur.
   <=> ( (vLimit 25 $ vCenter $ vBox $ fmap (\ x -> str [x, ' ']) "Ouest")
         <+> vBox (fmap (\ x -> str [x]) "  5    4    3    2    1  ")
         <+> vBox [ hBox [drawCell (lookupCell i b)
