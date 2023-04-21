@@ -10,7 +10,7 @@ module Main where
 import Brick ( defaultMain )
 import Board ( Faction(..), initialBoard )
 import Rules ( Game(..) )
-import UI ( app )
+import UI ( app, mkState )
 
 -- | Point d'entrée du programme.
 main :: IO ()
@@ -18,4 +18,4 @@ main = do
     _ <- defaultMain app initialState
     return ()
   where
-    initialState = Ongoing Elephant initialBoard
+    initialState = mkState (Ongoing Elephant initialBoard)

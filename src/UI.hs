@@ -7,6 +7,7 @@ Interface d'une partie de Siam.
 
 module UI
   ( app
+  , mkState
   ) where
 
 import Brick ( App(..), BrickEvent(..), BrickEvent(..), EventM, Widget,
@@ -15,13 +16,18 @@ import Brick.Widgets.Border ( borderWithLabel, border )
 import Brick.Widgets.Center ( hCenter, vCenter )
 import Brick.Widgets.Core ( hBox, vBox, (<=>), (<+>), hLimit, vLimit,
                             Padding(..), padRight )
+import Brick.Widgets.Edit ( Editor, editor )
 import qualified Graphics.Vty as V
 import Board
 import Rules
 
 type Name = ()
 
-app :: App Game e Name
+data State = State { currentGame :: Game
+                   , minibuffer :: Editor String Name
+                   }
+
+app :: App State e Name
 app = App { appDraw = drawUI
           , appChooseCursor = neverShowCursor
           , appHandleEvent = handleEvent
@@ -29,10 +35,17 @@ app = App { appDraw = drawUI
           , appAttrMap = const $ attrMap V.defAttr []
           }
 
+-- | Construit l'état de l'interface à partir d'une partie.
+mkState :: Game -> State
+mkState g = State { currentGame = g
+                  , minibuffer = editor () (Just 1) ""
+                  }
+
 -- | Affiche l'interface.
-drawUI :: Game -> [Widget Name]
-drawUI (Ongoing f b) = [drawBoard b <+> (drawDescrOngoing b f <=> help)]
-drawUI (Ended f b) = [drawBoard b <+> drawDescrEnded f]
+drawUI :: State -> [Widget Name]
+drawUI x = case currentGame x of
+  Ongoing f b -> [drawBoard b <+> (drawDescrOngoing b f <=> help)]
+  Ended f b -> [drawBoard b <+> drawDescrEnded f]
 
 -- | Affiche le plateau.
 drawBoard :: Board -> Widget Name
@@ -137,6 +150,6 @@ help = borderWithLabel (str "Commandes")
   <+> str " "
 
 -- | Fait évoluer l'interface en fonction d'un événement.
-handleEvent :: BrickEvent Name e -> EventM Name Game ()
+handleEvent :: BrickEvent Name e -> EventM Name State ()
 handleEvent (VtyEvent (V.EvKey (V.KChar 'q') [])) = halt
 handleEvent _ = return () -- FIXME
