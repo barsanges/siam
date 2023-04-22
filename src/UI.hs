@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {- |
    Module      : UI
    Copyright   : Copyright (C) 2023 barsanges
@@ -11,25 +12,29 @@ module UI
   ) where
 
 import Brick ( App(..), BrickEvent(..), BrickEvent(..), EventM, Widget,
-               attrMap, halt, str, strWrap, neverShowCursor )
+               attrMap, halt, str, strWrap, showFirstCursor )
+import Brick.Types ( zoom )
 import Brick.Widgets.Border ( borderWithLabel, border )
 import Brick.Widgets.Center ( hCenter, vCenter )
 import Brick.Widgets.Core ( hBox, vBox, (<=>), (<+>), hLimit, vLimit,
                             Padding(..), padRight )
-import Brick.Widgets.Edit ( Editor, editor )
+import Brick.Widgets.Edit ( Editor, editor, handleEditorEvent, renderEditor )
+import Data.List ( intercalate )
 import qualified Graphics.Vty as V
+import Lens.Micro.TH ( makeLenses )
 import Board
 import Rules
 
 type Name = ()
 
 data State = State { currentGame :: Game
-                   , minibuffer :: Editor String Name
+                   , _minibuffer :: Editor String Name
                    }
+makeLenses ''State
 
 app :: App State e Name
 app = App { appDraw = drawUI
-          , appChooseCursor = neverShowCursor
+          , appChooseCursor = showFirstCursor
           , appHandleEvent = handleEvent
           , appStartEvent = return ()
           , appAttrMap = const $ attrMap V.defAttr []
@@ -38,14 +43,21 @@ app = App { appDraw = drawUI
 -- | Construit l'état de l'interface à partir d'une partie.
 mkState :: Game -> State
 mkState g = State { currentGame = g
-                  , minibuffer = editor () (Just 1) ""
+                  , _minibuffer = editor () (Just 1) ""
                   }
 
 -- | Affiche l'interface.
 drawUI :: State -> [Widget Name]
-drawUI x = case currentGame x of
-  Ongoing f b -> [drawBoard b <+> (drawDescrOngoing b f <=> help)]
-  Ended f b -> [drawBoard b <+> drawDescrEnded f]
+drawUI x = [window <=> mb]
+  where
+    window = case currentGame x of
+      Ongoing f b -> drawBoard b <+> (drawDescrOngoing b f <=> help)
+      Ended f b -> drawBoard b <+> drawDescrEnded f
+    mb = (str "> ") <+> (renderEditor drawMinibuffer True (_minibuffer x))
+
+-- | Affiche le minibuffer.
+drawMinibuffer :: [String] -> Widget Name
+drawMinibuffer xs = str (intercalate " " xs)
 
 -- | Affiche le plateau.
 drawBoard :: Board -> Widget Name
@@ -152,4 +164,5 @@ help = borderWithLabel (str "Commandes")
 -- | Fait évoluer l'interface en fonction d'un événement.
 handleEvent :: BrickEvent Name e -> EventM Name State ()
 handleEvent (VtyEvent (V.EvKey (V.KChar 'q') [])) = halt
-handleEvent _ = return () -- FIXME
+handleEvent e = do
+    zoom minibuffer $ handleEditorEvent e
