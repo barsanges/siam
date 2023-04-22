@@ -163,6 +163,6 @@ help = borderWithLabel (str "Commandes")
 
 -- | Fait évoluer l'interface en fonction d'un événement.
 handleEvent :: BrickEvent Name e -> EventM Name State ()
-handleEvent (VtyEvent (V.EvKey (V.KChar 'q') [])) = halt
+handleEvent (VtyEvent (V.EvKey (V.KChar 'q') [])) = halt -- FIXME : à supprimer à terme.
 handleEvent e = do
     zoom minibuffer $ handleEditorEvent e
