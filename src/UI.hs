@@ -33,16 +33,14 @@ import Rules
 type Name = ()
 
 -- | L'état de l'interface.
-data State = State { currentGame :: Game
+data State = State { _currentGame :: Game
+                   , _prevGame :: Maybe Game
                    , _minibuffer :: Editor String Name
                    , _echo :: String
                    }
 makeLenses ''State
 
--- | Une commande soumise via le minibuffer.
-data MinibufferCmd = Ignore
-                   | Quit
-
+-- | L'application Brick.
 app :: App State e Name
 app = App { appDraw = drawUI
           , appChooseCursor = showFirstCursor
@@ -57,7 +55,8 @@ emptyMinibuffer = editor () (Just 1) ""
 
 -- | Construit l'état de l'interface à partir d'une partie.
 mkState :: Game -> State
-mkState g = State { currentGame = g
+mkState g = State { _currentGame = g
+                  , _prevGame = Nothing
                   , _minibuffer = emptyMinibuffer
                   , _echo = ""
                   }
@@ -66,7 +65,7 @@ mkState g = State { currentGame = g
 drawUI :: State -> [Widget Name]
 drawUI x = [window <=> e <=> mb]
   where
-    window = case currentGame x of
+    window = case _currentGame x of
       Ongoing f b -> drawBoard b <+> (drawDescrOngoing b f <=> help)
       Ended f b -> drawBoard b <+> drawDescrEnded f
     e = if null (_echo x)
@@ -184,22 +183,28 @@ help = borderWithLabel (str "Commandes")
 handleEvent :: BrickEvent Name e -> EventM Name State ()
 handleEvent (VtyEvent (V.EvKey V.KEnter [])) = do
   mb <- use minibuffer
-  let (e, cmd) = parse (getEditContents mb)
+  let content = getEditContents mb
   minibuffer .= emptyMinibuffer
-  echo .= e
-  case cmd of
-    Ignore -> return ()
-    Quit -> halt
+  case content of
+    [] -> do
+      echo .= ""
+    (cmd:_) -> case toLowerStr (trimStr cmd) of
+      "quit" -> halt
+      "undo" -> do
+        mpg <- use prevGame
+        case mpg of
+          Just pg -> do
+            currentGame .= pg
+            prevGame .= Nothing
+            echo .= "Annulation du dernier coup joué."
+          Nothing -> do
+            echo .= "Impossible de revenir en arrière, vous n'avez pas encore joué ce tour-ci."
+      "" -> do
+        echo .= ""
+      gibberish -> do
+        echo .= "'" ++ gibberish ++ "' n'est pas une commande valide."
 handleEvent e = do
     zoom minibuffer $ handleEditorEvent e
-
--- | Analyse une commande saisie dans le minibuffer.
-parse :: [String] -> (String, MinibufferCmd)
-parse [] = (" ", Ignore)
-parse (cmd:_) = case toLowerStr (trimStr cmd) of
-  "quit" -> ("", Quit)
-  "" -> ("", Ignore)
-  x -> ("'" ++ x ++ "' n'est pas une commande valide.", Ignore)
 
 -- | Met la chaîne de caractères en minuscules.
 toLowerStr :: String -> String
