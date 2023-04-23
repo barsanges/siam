@@ -35,6 +35,7 @@ type Name = ()
 -- | L'état de l'interface.
 data State = State { currentGame :: Game
                    , _minibuffer :: Editor String Name
+                   , _echo :: String
                    }
 makeLenses ''State
 
@@ -58,15 +59,19 @@ emptyMinibuffer = editor () (Just 1) ""
 mkState :: Game -> State
 mkState g = State { currentGame = g
                   , _minibuffer = emptyMinibuffer
+                  , _echo = ""
                   }
 
 -- | Affiche l'interface.
 drawUI :: State -> [Widget Name]
-drawUI x = [window <=> mb]
+drawUI x = [window <=> e <=> mb]
   where
     window = case currentGame x of
       Ongoing f b -> drawBoard b <+> (drawDescrOngoing b f <=> help)
       Ended f b -> drawBoard b <+> drawDescrEnded f
+    e = if null (_echo x)
+        then strWrap " "
+        else strWrap (_echo x)
     mb = (str "> ") <+> (renderEditor drawMinibuffer True (_minibuffer x))
 
 -- | Affiche le minibuffer.
@@ -179,8 +184,9 @@ help = borderWithLabel (str "Commandes")
 handleEvent :: BrickEvent Name e -> EventM Name State ()
 handleEvent (VtyEvent (V.EvKey V.KEnter [])) = do
   mb <- use minibuffer
-  let cmd = parse (getEditContents mb)
+  let (e, cmd) = parse (getEditContents mb)
   minibuffer .= emptyMinibuffer
+  echo .= e
   case cmd of
     Ignore -> return ()
     Quit -> halt
@@ -188,11 +194,12 @@ handleEvent e = do
     zoom minibuffer $ handleEditorEvent e
 
 -- | Analyse une commande saisie dans le minibuffer.
-parse :: [String] -> MinibufferCmd
-parse [] = Ignore
+parse :: [String] -> (String, MinibufferCmd)
+parse [] = (" ", Ignore)
 parse (cmd:_) = case toLowerStr (trimStr cmd) of
-  "quit" -> Quit
-  _ -> Ignore
+  "quit" -> ("", Quit)
+  "" -> ("", Ignore)
+  x -> ("'" ++ x ++ "' n'est pas une commande valide.", Ignore)
 
 -- | Met la chaîne de caractères en minuscules.
 toLowerStr :: String -> String
