@@ -18,19 +18,29 @@ import Brick.Widgets.Border ( borderWithLabel, border )
 import Brick.Widgets.Center ( hCenter, vCenter )
 import Brick.Widgets.Core ( hBox, vBox, (<=>), (<+>), hLimit, vLimit,
                             Padding(..), padRight )
-import Brick.Widgets.Edit ( Editor, editor, handleEditorEvent, renderEditor )
-import Data.List ( intercalate )
+import Brick.Widgets.Edit ( Editor, editor, handleEditorEvent, renderEditor,
+                            getEditContents )
+import Data.Char ( isSpace, toLower )
+import Data.List ( intercalate, dropWhileEnd )
 import qualified Graphics.Vty as V
+import Lens.Micro.Mtl ( use, (.=) )
 import Lens.Micro.TH ( makeLenses )
+
 import Board
 import Rules
 
+-- | Les noms utilisés pour identifier les ressources de l'interface.
 type Name = ()
 
+-- | L'état de l'interface.
 data State = State { currentGame :: Game
                    , _minibuffer :: Editor String Name
                    }
 makeLenses ''State
+
+-- | Une commande soumise via le minibuffer.
+data MinibufferCmd = Ignore
+                   | Quit
 
 app :: App State e Name
 app = App { appDraw = drawUI
@@ -40,10 +50,14 @@ app = App { appDraw = drawUI
           , appAttrMap = const $ attrMap V.defAttr []
           }
 
+-- | Un minibuffer vide.
+emptyMinibuffer :: Editor String Name
+emptyMinibuffer = editor () (Just 1) ""
+
 -- | Construit l'état de l'interface à partir d'une partie.
 mkState :: Game -> State
 mkState g = State { currentGame = g
-                  , _minibuffer = editor () (Just 1) ""
+                  , _minibuffer = emptyMinibuffer
                   }
 
 -- | Affiche l'interface.
@@ -163,6 +177,27 @@ help = borderWithLabel (str "Commandes")
 
 -- | Fait évoluer l'interface en fonction d'un événement.
 handleEvent :: BrickEvent Name e -> EventM Name State ()
-handleEvent (VtyEvent (V.EvKey (V.KChar 'q') [])) = halt -- FIXME : à supprimer à terme.
+handleEvent (VtyEvent (V.EvKey V.KEnter [])) = do
+  mb <- use minibuffer
+  let cmd = parse (getEditContents mb)
+  minibuffer .= emptyMinibuffer
+  case cmd of
+    Ignore -> return ()
+    Quit -> halt
 handleEvent e = do
     zoom minibuffer $ handleEditorEvent e
+
+-- | Analyse une commande saisie dans le minibuffer.
+parse :: [String] -> MinibufferCmd
+parse [] = Ignore
+parse (cmd:_) = case toLowerStr (trimStr cmd) of
+  "quit" -> Quit
+  _ -> Ignore
+
+-- | Met la chaîne de caractères en minuscules.
+toLowerStr :: String -> String
+toLowerStr = fmap toLower
+
+-- | Supprime les espaces au début et à la fin de la chaîne de caractères.
+trimStr :: String -> String
+trimStr = dropWhileEnd isSpace . dropWhile isSpace
