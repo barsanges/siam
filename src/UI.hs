@@ -20,14 +20,14 @@ import Brick.Widgets.Core ( hBox, vBox, (<=>), (<+>), hLimit, vLimit,
                             Padding(..), padRight )
 import Brick.Widgets.Edit ( Editor, editor, handleEditorEvent, renderEditor,
                             getEditContents )
-import Data.Char ( isSpace, toLower )
-import Data.List ( intercalate, dropWhileEnd )
+import Data.List ( intercalate )
 import qualified Graphics.Vty as V
 import Lens.Micro.Mtl ( use, (.=) )
 import Lens.Micro.TH ( makeLenses )
 
 import Board
 import Rules
+import Utils
 
 -- | Les noms utilisés pour identifier les ressources de l'interface.
 type Name = ()
@@ -188,7 +188,7 @@ handleEvent (VtyEvent (V.EvKey V.KEnter [])) = do
   case content of
     [] -> do
       echo .= ""
-    (cmd:_) -> case toLowerStr (trimStr cmd) of
+    (cmd:_) -> case sanitizeStr cmd of
       "quit" -> halt
       "undo" -> do
         mpg <- use prevGame
@@ -205,11 +205,3 @@ handleEvent (VtyEvent (V.EvKey V.KEnter [])) = do
         echo .= "'" ++ gibberish ++ "' n'est pas une commande valide."
 handleEvent e = do
     zoom minibuffer $ handleEditorEvent e
-
--- | Met la chaîne de caractères en minuscules.
-toLowerStr :: String -> String
-toLowerStr = fmap toLower
-
--- | Supprime les espaces au début et à la fin de la chaîne de caractères.
-trimStr :: String -> String
-trimStr = dropWhileEnd isSpace . dropWhile isSpace
