@@ -27,3 +27,11 @@ executables:
     main:            Main.hs
     dependencies:
     - siam
+
+tests:
+  siam-test:
+    main:                Spec.hs
+    source-dirs:         test
+    dependencies:
+    - siam
+    - hspec
