@@ -13,7 +13,6 @@ module Board
   , Idx
   , mkIdx
   , parseIdx
-  , idxes
   , Board
   , initialBoard
   , numberOut
@@ -68,13 +67,6 @@ parseIdx str = go (sanitizeStr str)
       j <- y `elemIndex` ['1', '2', '3', '4', '5']
       return (Idx (i + 5 * j))
     go _ = Nothing
-
--- | Ensemble des indices des cases : chaque liste correspond à un
--- rang, de gauche à droite et de haut en bas.
-idxes :: [[Idx]]
-idxes = [ [ Idx (i + 5 * j) | i <- [0..4] ]
-        | j <- [0..4]
-        ]
 
 -- | Le plateau de jeu.
 data Board = Board { content_ :: IM.IntMap Pawn

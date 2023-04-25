@@ -20,6 +20,7 @@ import Brick.Widgets.Core ( hBox, vBox, (<=>), (<+>), hLimit, vLimit,
                             Padding(..), padRight )
 import Brick.Widgets.Edit ( Editor, editor, handleEditorEvent, renderEditor,
                             getEditContents )
+import Data.Maybe ( catMaybes )
 import Data.List ( intercalate )
 import qualified Graphics.Vty as V
 import Lens.Micro.Mtl ( use, (.=) )
@@ -86,10 +87,11 @@ drawBoard b = borderWithLabel (str "Plateau")
   -- plutôt que de renseigner des chiffres en dur.
   <=> ( (vLimit 25 $ vCenter $ vBox $ fmap (\ x -> str [x, ' ']) "Ouest")
         <+> vBox (fmap (\ x -> str [x]) "  5    4    3    2    1  ")
-        <+> vBox [ hBox [drawCell (lookupCell i b)
-                        | i <- ix
-                        ]
-                 | ix <- idxes
+        <+> vBox [ hBox $ catMaybes
+                   [fmap (\ i -> drawCell (lookupCell i b)) (parseIdx (c ++ r))
+                   | c <- ["a", "b", "c", "d", "e"]
+                   ]
+                 | r <- ["1", "2", "3", "4", "5"]
                  ]
         <+> vBox (fmap (\ x -> str [x]) "  5    4    3    2    1  ")
         <+> (vLimit 25 $ vCenter $ vBox $ fmap (\ x -> str [' ', x]) "Est")
