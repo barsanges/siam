@@ -63,9 +63,9 @@ parseIdx :: String -> Maybe Idx
 parseIdx str = go (sanitizeStr str)
   where
     go (x:y:[]) = do
-      i <- x `elemIndex` ['a', 'b', 'c', 'd', 'e']
-      j <- y `elemIndex` ['1', '2', '3', '4', '5']
-      return (Idx (i + 5 * j))
+      i <- y `elemIndex` ['5', '4', '3', '2', '1']
+      j <- x `elemIndex` ['a', 'b', 'c', 'd', 'e']
+      return (Idx (j + 5 * i))
     go _ = Nothing
 
 -- | Le plateau de jeu.
