@@ -8,8 +8,11 @@ Représentation d'un plateau de Siam.
 module Board
   ( Faction(..)
   , Orientation(..)
+  , parseOrientation
   , Pawn(..)
   , Idx
+  , mkIdx
+  , parseIdx
   , idxes
   , Board
   , initialBoard
@@ -17,7 +20,9 @@ module Board
   , lookupCell
   ) where
 
+import Data.List ( elemIndex )
 import qualified Data.IntMap as IM
+import Utils
 
 -- | Une des deux factions en présence.
 data Faction = Elephant | Rhino
@@ -30,6 +35,15 @@ data Orientation = North
                  | East
   deriving (Eq, Show)
 
+-- | Renvoie une orientation à partir d'une chaîne de caractères.
+parseOrientation :: String -> Maybe Orientation
+parseOrientation x = case sanitizeStr x of
+  "n" -> Just North
+  "w" -> Just West
+  "s" -> Just South
+  "e" -> Just East
+  _ -> Nothing
+
 -- | Un pion sur le plateau.
 data Pawn = Animal Faction Orientation
           | Rock
@@ -38,6 +52,22 @@ data Pawn = Animal Faction Orientation
 -- | Identifiant d'une case du plateau de jeu.
 data Idx = Idx Int
   deriving (Eq, Show)
+
+-- | Renvoie un indice à partir d'un entier.
+mkIdx :: Int -> Maybe Idx
+mkIdx i = if (0 <= i) && (i < 25)
+          then Just (Idx i)
+          else Nothing
+
+-- | Renvoie un indice à partir d'une chaîne de caractères.
+parseIdx :: String -> Maybe Idx
+parseIdx str = go (sanitizeStr str)
+  where
+    go (x:y:[]) = do
+      i <- x `elemIndex` ['a', 'b', 'c', 'd', 'e']
+      j <- y `elemIndex` ['1', '2', '3', '4', '5']
+      return (Idx (i + 5 * j))
+    go _ = Nothing
 
 -- | Ensemble des indices des cases : chaque liste correspond à un
 -- rang, de gauche à droite et de haut en bas.
