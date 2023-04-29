@@ -67,3 +67,19 @@ spec = do
 
     it "erroneous strings are not parsed (3)" $
       parseIdx "a5 e1" `shouldBe` Nothing
+
+  describe "Idx" $ do
+    it "the output of show is equal to the input of parseIdx (1)" $
+      show (parseIdx "a1") `shouldBe` "Just a1"
+
+    it "the output of show is equal to the input of parseIdx (2)" $
+      show (parseIdx "c2") `shouldBe` "Just c2"
+
+    it "the output of show is equal to the input of parseIdx (3)" $
+      show (parseIdx "e4") `shouldBe` "Just e4"
+
+    it "the output of show is equal to the input of parseIdx (4)" $
+      show (parseIdx "b5") `shouldBe` "Just b5"
+
+    it "the output of show is equal to the input of parseIdx (5)" $
+      show (parseIdx "d3") `shouldBe` "Just d3"

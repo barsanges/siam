@@ -50,7 +50,13 @@ data Pawn = Animal Faction Orientation
 
 -- | Identifiant d'une case du plateau de jeu.
 data Idx = Idx Int
-  deriving (Eq, Show)
+  deriving Eq
+
+instance Show Idx where
+  show (Idx i) = [c, r]
+    where
+      r = ['5', '4', '3', '2', '1'] !! (i `div` 5)
+      c = ['a', 'b', 'c', 'd', 'e'] !! (i `mod` 5)
 
 -- | Renvoie un indice à partir d'un entier.
 mkIdx :: Int -> Maybe Idx
