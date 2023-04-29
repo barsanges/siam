@@ -14,6 +14,7 @@ module Board
   , mkIdx
   , parseIdx
   , edge
+  , neighbors
   , Board
   , initialBoard
   , numberOut
@@ -80,6 +81,20 @@ parseIdx str = go (sanitizeStr str)
 edge :: S.Set Idx
 edge = S.fromList (fmap Idx [0, 1, 2, 3, 4, 5, 9, 10, 14,
                              15, 19, 20, 21, 22, 23, 24])
+
+-- | Renvoie les indices des cases adjacentes à la case donnée.
+neighbors :: Idx -> S.Set Idx
+neighbors (Idx idx) = S.fromList [Idx (j' + 5 * i') | (i', j') <- [ (i - 1, j)
+                                                                  , (i, j + 1)
+                                                                  , (i + 1, j)
+                                                                  , (i, j - 1)]
+                                                    , 0 <= i'
+                                                    , i' < 5
+                                                    , 0 <= j'
+                                                    , j' < 5]
+  where
+    i = idx `div` 5
+    j = idx `mod` 5
 
 -- | Le plateau de jeu.
 data Board = Board { content_ :: IM.IntMap Pawn

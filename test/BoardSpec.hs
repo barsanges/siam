@@ -92,3 +92,19 @@ spec = do
                                         , r <- ['1', '5']]
                        ++ [parseIdx [c, r] | c <- ['a', 'e']
                                            , r <- ['5', '4', '3', '2', '1']])
+
+  describe "neighbors" $ do
+    it "returns the indexes of the neighboring cells (1)" $
+      neighbors (fromJust . parseIdx $ "a5") `shouldBe` (S.fromList [fromJust $ parseIdx x | x <- ["b5", "a4"]])
+
+    it "returns the indexes of the neighboring cells (2)" $
+      neighbors (fromJust . parseIdx $ "b1") `shouldBe` (S.fromList [fromJust $ parseIdx x | x <- ["a1", "b2", "c1"]])
+
+    it "returns the indexes of the neighboring cells (3)" $
+      neighbors (fromJust . parseIdx $ "d2") `shouldBe` (S.fromList [fromJust $ parseIdx x | x <- ["c2", "d3", "e2", "d1"]])
+
+    it "returns the indexes of the neighboring cells (4)" $
+      neighbors (fromJust . parseIdx $ "c3") `shouldBe` (S.fromList [fromJust $ parseIdx x | x <- ["b3", "c4", "d3", "c2"]])
+
+    it "returns the indexes of the neighboring cells (5)" $
+      neighbors (fromJust . parseIdx $ "e4") `shouldBe` (S.fromList [fromJust $ parseIdx x | x <- ["d4", "e5", "e3"]])
