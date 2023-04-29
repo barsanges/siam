@@ -13,6 +13,7 @@ module Board
   , Idx
   , mkIdx
   , parseIdx
+  , edge
   , Board
   , initialBoard
   , numberOut
@@ -20,6 +21,7 @@ module Board
   ) where
 
 import Data.List ( elemIndex )
+import qualified Data.Set as S
 import qualified Data.IntMap as IM
 import Utils
 
@@ -50,7 +52,7 @@ data Pawn = Animal Faction Orientation
 
 -- | Identifiant d'une case du plateau de jeu.
 data Idx = Idx Int
-  deriving Eq
+  deriving (Eq, Ord)
 
 instance Show Idx where
   show (Idx i) = [c, r]
@@ -73,6 +75,11 @@ parseIdx str = go (sanitizeStr str)
       j <- x `elemIndex` ['a', 'b', 'c', 'd', 'e']
       return (Idx (j + 5 * i))
     go _ = Nothing
+
+-- | Renvoie les indices des cases en bordure du plateau.
+edge :: S.Set Idx
+edge = S.fromList (fmap Idx [0, 1, 2, 3, 4, 5, 9, 10, 14,
+                             15, 19, 20, 21, 22, 23, 24])
 
 -- | Le plateau de jeu.
 data Board = Board { content_ :: IM.IntMap Pawn

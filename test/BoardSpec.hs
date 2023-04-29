@@ -7,7 +7,8 @@ Teste le module Board.
 
 module BoardSpec ( spec ) where
 
-import Data.Maybe ( fromJust )
+import Data.Maybe ( fromJust, catMaybes )
+import qualified Data.Set as S
 import Test.Hspec
 import Board
 
@@ -83,3 +84,11 @@ spec = do
 
     it "the output of show is equal to the input of parseIdx (5)" $
       show (parseIdx "d3") `shouldBe` "Just d3"
+
+  describe "edge" $ do
+    it "returns the indexes of the cells on the edge of the board" $
+      edge `shouldBe` (S.fromList . catMaybes $
+                       [parseIdx [c, r] | c <- ['a', 'b', 'c', 'd', 'e']
+                                        , r <- ['1', '5']]
+                       ++ [parseIdx [c, r] | c <- ['a', 'e']
+                                           , r <- ['5', '4', '3', '2', '1']])
