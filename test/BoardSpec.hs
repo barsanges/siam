@@ -113,3 +113,19 @@ spec = do
 
     it "returns the indexes of the neighboring cells (5)" $
       neighbors (fromJust . parseIdx $ "e4") `shouldBe` (S.fromList [unsafeIdx x | x <- ["d4", "e5", "e3"]])
+
+  describe "line" $ do
+    it "returns the indexes of the cells in a given direction from a given starting point (1)" $
+      line (unsafeIdx "b5") South `shouldBe` [unsafeIdx x | x <- ["b4", "b3", "b2", "b1"]]
+
+    it "returns the indexes of the cells in a given direction from a given starting point (2)" $
+      line (unsafeIdx "c3") West `shouldBe` [unsafeIdx x | x <- ["b3", "a3"]]
+
+    it "returns the indexes of the cells in a given direction from a given starting point (3)" $
+      line (unsafeIdx "a4") North `shouldBe` [unsafeIdx "a5"]
+
+    it "returns the indexes of the cells in a given direction from a given starting point (4)" $
+      line (unsafeIdx "d2") East `shouldBe` [unsafeIdx "e2"]
+
+    it "returns the indexes of the cells in a given direction from a given starting point (5)" $
+      line (unsafeIdx "c1") South `shouldBe` []

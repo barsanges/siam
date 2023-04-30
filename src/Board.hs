@@ -15,6 +15,7 @@ module Board
   , parseIdx
   , edge
   , neighbors
+  , line
   , Board
   , initialBoard
   , numberOut
@@ -102,6 +103,18 @@ neighbors idx = S.fromList [unsafeFromPair i' j' | (i', j') <- [ (i - 1, j)
                                                  , i' < 5
                                                  , 0 <= j'
                                                  , j' < 5]
+  where
+    (i, j) = toPair idx
+
+-- | Renvoie les indices des cases formant une ligne dans la direction donnée à
+-- partir de la case donnée. La première case (celle fournie dans l'appel de la
+-- fonction) n'est pas incluse dans le retour de la fonction.
+line :: Idx -> Orientation -> [Idx]
+line idx dir = case dir of
+  North -> [unsafeFromPair i' j | i' <- [(i-1), (i-2)..0]]
+  West -> [unsafeFromPair i j' | j' <- [(j-1), (j-2)..0]]
+  South -> [unsafeFromPair i' j |  i' <- [(i+1)..4]]
+  East -> [unsafeFromPair i j' | j' <- [(j+1)..4]]
   where
     (i, j) = toPair idx
 
