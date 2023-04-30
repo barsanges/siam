@@ -56,10 +56,20 @@ data Idx = Idx Int
   deriving (Eq, Ord)
 
 instance Show Idx where
-  show (Idx i) = [c, r]
+  show idx = [c, r]
     where
-      r = ['5', '4', '3', '2', '1'] !! (i `div` 5)
-      c = ['a', 'b', 'c', 'd', 'e'] !! (i `mod` 5)
+      (i, j) = toPair idx
+      r = ['5', '4', '3', '2', '1'] !! i
+      c = ['a', 'b', 'c', 'd', 'e'] !! j
+
+-- | Transforme un indice en un indice de ligne et un indice de colonne.
+toPair :: Idx -> (Int, Int)
+toPair (Idx idx) = (idx `div` 5, idx `mod` 5)
+
+-- | Construit un indice à partir d'un indice de ligne et d'un indice de
+-- colonne.
+unsafeFromPair :: Int -> Int -> Idx
+unsafeFromPair i j = Idx (j + 5 * i)
 
 -- | Renvoie un indice à partir d'un entier.
 mkIdx :: Int -> Maybe Idx
@@ -74,7 +84,7 @@ parseIdx str = go (sanitizeStr str)
     go (x:y:[]) = do
       i <- y `elemIndex` ['5', '4', '3', '2', '1']
       j <- x `elemIndex` ['a', 'b', 'c', 'd', 'e']
-      return (Idx (j + 5 * i))
+      return (unsafeFromPair i j)
     go _ = Nothing
 
 -- | Renvoie les indices des cases en bordure du plateau.
@@ -84,17 +94,16 @@ edge = S.fromList (fmap Idx [0, 1, 2, 3, 4, 5, 9, 10, 14,
 
 -- | Renvoie les indices des cases adjacentes à la case donnée.
 neighbors :: Idx -> S.Set Idx
-neighbors (Idx idx) = S.fromList [Idx (j' + 5 * i') | (i', j') <- [ (i - 1, j)
-                                                                  , (i, j + 1)
-                                                                  , (i + 1, j)
-                                                                  , (i, j - 1)]
-                                                    , 0 <= i'
-                                                    , i' < 5
-                                                    , 0 <= j'
-                                                    , j' < 5]
+neighbors idx = S.fromList [unsafeFromPair i' j' | (i', j') <- [ (i - 1, j)
+                                                               , (i, j + 1)
+                                                               , (i + 1, j)
+                                                               , (i, j - 1)]
+                                                 , 0 <= i'
+                                                 , i' < 5
+                                                 , 0 <= j'
+                                                 , j' < 5]
   where
-    i = idx `div` 5
-    j = idx `mod` 5
+    (i, j) = toPair idx
 
 -- | Le plateau de jeu.
 data Board = Board { content_ :: IM.IntMap Pawn
