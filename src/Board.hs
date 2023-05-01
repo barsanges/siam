@@ -20,6 +20,8 @@ module Board
   , initialBoard
   , numberOut
   , lookupCell
+  , pop
+  , put
   ) where
 
 import Data.List ( elemIndex )
@@ -123,7 +125,7 @@ data Board = Board { content_ :: IM.IntMap Pawn
                    , elephantsOut_ :: Int
                    , rhinosOut_ :: Int
                    }
-  deriving Show
+  deriving (Eq, Show)
 
 -- | Le plateau de jeu en début de partie.
 initialBoard :: Board
@@ -143,3 +145,41 @@ numberOut b Rhino = rhinosOut_ b
 -- | Renvoie le contenu d'une cellule.
 lookupCell :: Idx -> Board -> Maybe Pawn
 lookupCell (Idx idx) b = IM.lookup idx (content_ b)
+
+-- | Incrémente la réserve pour le type de pion concerné. La fonction n'est
+-- pas "sûre" dans le sens où elle peut aboutir à avoir un jeu avec plus que
+-- 5 animaux d'un type (répartis entre le plateau et la réserve).
+unsafeIncr :: Maybe Pawn -> Board -> Board
+unsafeIncr (Just (Animal Elephant _)) b = b { elephantsOut_ = 1 + (elephantsOut_ b) }
+unsafeIncr (Just (Animal Rhino _)) b = b { rhinosOut_ = 1 + (rhinosOut_ b) }
+unsafeIncr _ b = b
+
+-- | Décrémente la réserve pour le type de pion concerné. La fonction n'est
+-- pas "sûre" dans le sens où elle peut aboutir à avoir un jeu avec plus que
+-- 5 animaux d'un type (répartis entre le plateau et la réserve).
+unsafeDecr :: Pawn -> Board -> Maybe Board
+unsafeDecr (Animal Elephant _) b = if elephantsOut_ b > 0
+                                   then Just (b { elephantsOut_ = (elephantsOut_ b) - 1})
+                                   else Nothing
+unsafeDecr (Animal Rhino _) b = if rhinosOut_ b > 0
+                                then Just (b { rhinosOut_ = (rhinosOut_ b) - 1})
+                                else Nothing
+unsafeDecr _ b = Just b
+
+-- | Place le pion (s'il y en a un) de la case indiquée dans la réserve.
+pop :: Idx -> Board -> (Board, Maybe Pawn)
+pop (Idx i) b = (b', p)
+  where
+    p = IM.lookup i (content_ b)
+    b' = unsafeIncr p (b { content_ = IM.delete i (content_ b) })
+
+-- | Place le pion depuis la réserve (si celle-ci est non vide) sur la case
+-- indiquée.
+put :: Pawn -> Idx -> Board -> Maybe (Board, Maybe Pawn)
+put new (Idx i) b0 = do
+  b1 <- unsafeDecr new b0
+  let b2 = unsafeIncr old b1
+  let b3 = b2 { content_ = IM.insert i new (content_ b0) }
+  return (b3, old)
+  where
+    old = IM.lookup i (content_ b0)

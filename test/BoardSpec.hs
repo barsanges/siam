@@ -15,6 +15,21 @@ import Board
 unsafeIdx :: String -> Idx
 unsafeIdx = fromJust . parseIdx
 
+board1 :: Board
+board1 = fst . fromJust $ put (Animal Rhino North) (unsafeIdx "b4") initialBoard
+
+board2 :: Board
+board2 = fst . fromJust $ put (Animal Elephant South) (unsafeIdx "b4") initialBoard
+
+emptyReserve :: Board
+emptyReserve = fromJust $ do
+  (x1, _) <- put (Animal Rhino North) (unsafeIdx "c5") initialBoard
+  (x2, _) <- put (Animal Rhino North) (unsafeIdx "c4") x1
+  (x3, _) <- put (Animal Rhino North) (unsafeIdx "c3") x2
+  (x4, _) <- put (Animal Rhino North) (unsafeIdx "c2") x3
+  (x5, _) <- put (Animal Rhino North) (unsafeIdx "c1") x4
+  return x5
+
 spec :: Spec
 spec = do
   describe "parseOrientation" $ do
@@ -129,3 +144,26 @@ spec = do
 
     it "returns the indexes of the cells in a given direction from a given starting point (5)" $
       line (unsafeIdx "c1") South `shouldBe` []
+
+  describe "pop" $ do
+    it "removes a pawn from the board (1)" $ do
+      pop (unsafeIdx "b4") board1 `shouldBe` (initialBoard, Just (Animal Rhino North))
+
+    it "removes a pawn from the board (2)" $ do
+      (snd $ pop (unsafeIdx "c3") board1) `shouldBe` Just Rock
+
+    it "cannot remove a pawn if there isn't one" $ do
+      pop (unsafeIdx "a5") board1 `shouldBe` (board1, Nothing)
+
+    it "adjusts the number of animals out" $ do
+      numberOut (fst $ pop (unsafeIdx "b4") board1) Rhino `shouldBe` 5
+
+  describe "put" $ do
+    it "can replace a pawn on a cell (1)" $ do
+      put (Animal Elephant South) (unsafeIdx "b4") board1 `shouldBe` Just (board2, Just $ Animal Rhino North)
+
+    it "can replace a pawn on a cell (2)" $ do
+      put (Animal Elephant West) (unsafeIdx "c3") emptyReserve `shouldNotBe` Nothing
+
+    it "does nothing if the reserve is empty" $ do
+      put (Animal Rhino West) (unsafeIdx "c3") emptyReserve `shouldBe` Nothing
